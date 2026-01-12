@@ -1,7 +1,9 @@
 import 'dart:convert';
 
 import 'package:favorite_places/models/place.dart';
+import 'package:favorite_places/screens/map.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 
@@ -57,6 +59,10 @@ class _LocationInputState extends State<LocationInput> {
 
     if (latitude == null || longitude == null) return;
 
+    _savePlace(latitude, longitude);
+  }
+
+  Future<void> _savePlace(double latitude, double longitude) async {
     final url = Uri.parse(
       "https://maps.googleapis.com/maps/api/geocode/json?latlng=$latitude,$longitude&key=AIzaSyBgnTEz06Hm4hi7tCwJidET31Z0BLJif6Q",
     );
@@ -73,6 +79,15 @@ class _LocationInputState extends State<LocationInput> {
       _isGettingLocation = false;
     });
     widget.onSelectLocation(_pickedLocation!);
+  }
+
+  void _selectOnMap() async {
+    final pickedLocation = await Navigator.of(
+      context,
+    ).push<LatLng>(MaterialPageRoute(builder: (ctx) => const MapScreen()));
+
+    if (pickedLocation == null) return;
+    _savePlace(pickedLocation.latitude, pickedLocation.longitude);
   }
 
   @override
@@ -119,7 +134,7 @@ class _LocationInputState extends State<LocationInput> {
             ),
             TextButton.icon(
               icon: const Icon(Icons.map),
-              onPressed: () {},
+              onPressed: _selectOnMap,
               label: const Text("Select on map"),
             ),
           ],
